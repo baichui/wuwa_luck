@@ -11,11 +11,12 @@ from nonebot.plugin import PluginMetadata
 
 from .config import character_weights, load_config
 from .image import get_image
+from .updater import update_plugin
 
 __plugin_meta__ = PluginMetadata(
     name="WuWaLuck|今日运势",
-    description="鸣潮主题白底今日运势图；权重可在插件目录 config.json 配置",
-    usage="/luck 或 /今日运势",
+    description="鸣潮主题白底今日运势图；config.json 可配权重；/更新luck 自更新",
+    usage="/luck /今日运势 /更新luck",
     type="application",
     homepage="https://github.com/baichui/wuwa_luck",
     supported_adapters={"~onebot.v11"},
@@ -27,6 +28,24 @@ wuwa_luck = on_command(
     priority=5,
     block=True,
 )
+
+update_luck = on_command(
+    "更新luck",
+    aliases={"更新运势", "luck更新"},
+    priority=5,
+    block=True,
+)
+
+
+@update_luck.handle()
+async def _(event: MessageEvent):
+    try:
+        msg = await update_plugin("nonebot")
+    except Exception as e:  # noqa: BLE001
+        logger.exception("wuwa_luck: update failed")
+        await update_luck.finish(f"更新失败：{e}")
+        return
+    await update_luck.finish(msg)
 
 
 @wuwa_luck.handle()
